@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+
 
 public enum E_PlayerDirection { Left, Right, Up, Down }
 
@@ -28,6 +30,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool m_IsDead = false;
     [Header("Is the Player Moving?")]
     [SerializeField] private bool m_IsMoving;
+    [Header("Is the Player Moving?")]
+    [SerializeField] private bool m_IsAttacking;
     [Header("Can the Player Move?")]
     [SerializeField] private bool m_CanMove = true;
      
@@ -37,6 +41,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Animator m_PlayerAnimator;
     [Header("Player's Sprite Renderer")]
     [SerializeField] private SpriteRenderer m_PlayerSpriteRenderer;
+
+    public GameObject boss;
+    public GameObject win;
     #endregion
 
     #region Properties
@@ -172,6 +179,19 @@ public class PlayerController : MonoBehaviour
             m_PlayerSpriteRenderer = value;
         }
     }
+
+    public bool IsAttacking
+    {
+        get
+        {
+            return m_IsAttacking;
+        }
+
+        set
+        {
+            m_IsAttacking = value;
+        }
+    }
     #endregion
 
     //Default Value in Inspector
@@ -191,6 +211,7 @@ public class PlayerController : MonoBehaviour
 
         m_PlayerRigidbody.gravityScale = 0;
         m_PlayerSpriteRenderer.sortingOrder = 1;
+        m_IsAttacking = false;
     }
 
     // Use this for initialization
@@ -212,11 +233,60 @@ public class PlayerController : MonoBehaviour
             m_PlayerAnimator.SetFloat("XInput", m_XAxis);
             m_PlayerAnimator.SetFloat("YInput", m_YAxis);
 
+            m_PlayerAnimator.SetBool("IsAttacking", IsAttacking);
+
+            if (Input.GetKeyDown(KeyCode.Z) && IsMoving == false) {
+                StartCoroutine("Attack");
+                
+            }
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                Destroy(boss);
+
+            }
+
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                win.SetActive(true);
+
+            }
+
+
+            switch (m_PlayerDirection)
+            {
+                case E_PlayerDirection.Down:
+                    m_PlayerAnimator.SetBool("FaceDown", true);
+                    m_PlayerAnimator.SetBool("FaceUp", false);
+                    m_PlayerAnimator.SetBool("FaceLeft", false);
+                    m_PlayerAnimator.SetBool("FaceRight", false);
+                    break;
+                case E_PlayerDirection.Up:
+                    m_PlayerAnimator.SetBool("FaceUp", true);
+                    m_PlayerAnimator.SetBool("FaceDown", false);
+                    m_PlayerAnimator.SetBool("FaceLeft", false);
+                    m_PlayerAnimator.SetBool("FaceRight", false);
+                    break;
+                case E_PlayerDirection.Left:
+                    m_PlayerAnimator.SetBool("FaceLeft", true);
+                    m_PlayerAnimator.SetBool("FaceUp", false);
+                    m_PlayerAnimator.SetBool("FaceDown", false);
+                    m_PlayerAnimator.SetBool("FaceRight", false);
+                    break;
+                case E_PlayerDirection.Right:
+                    m_PlayerAnimator.SetBool("FaceRight", true);
+                    m_PlayerAnimator.SetBool("FaceUp", false);
+                    m_PlayerAnimator.SetBool("FaceLeft", false);
+                    m_PlayerAnimator.SetBool("FaceDown", false);
+                    break;
+
+            }
+
             //Set Direction
             #region SetDirection
             if (m_XAxis > 0)
             {
                 m_PlayerDirection = E_PlayerDirection.Right;
+                
 
             }
             else if (m_XAxis < 0)
@@ -246,6 +316,15 @@ public class PlayerController : MonoBehaviour
 
             m_PlayerRigidbody.velocity = new Vector2(m_XAxis * m_PlayerSpeed, m_YAxis * m_PlayerSpeed);
         }
+    }
+
+    IEnumerator Attack()
+    {
+        IsAttacking = true;
+        
+        yield return new WaitUntil(() => m_PlayerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1);
+        
+        IsAttacking = false;
     }
 
     
