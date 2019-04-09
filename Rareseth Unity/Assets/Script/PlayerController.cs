@@ -34,12 +34,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool m_IsAttacking;
     [Header("Can the Player Move?")]
     [SerializeField] private bool m_CanMove = true;
-     
+
     [Header("Player's RigidBody")]
     [SerializeField] private Rigidbody2D m_PlayerRigidbody;
     [SerializeField] private Animator m_PlayerAnimator;
     [SerializeField] private GameObject m_Mage;
     [SerializeField] private GameObject m_Warrior;
+    [SerializeField] private int m_MageHealth;
+    [SerializeField] private int m_WarriorHealth;
 
     #endregion
 
@@ -213,6 +215,32 @@ public class PlayerController : MonoBehaviour
             m_PlayerAnimator = value;
         }
     }
+
+    public int MageHealth
+    {
+        get
+        {
+            return m_MageHealth;
+        }
+
+        set
+        {
+            m_MageHealth = value;
+        }
+    }
+
+    public int WarriorHealth
+    {
+        get
+        {
+            return m_WarriorHealth;
+        }
+
+        set
+        {
+            m_WarriorHealth = value;
+        }
+    }
     #endregion
 
     //Default Value in Inspector
@@ -240,6 +268,15 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        GameObject.Find("Warrior Health").GetComponent<TextMeshProUGUI>().SetText("Warrior Health: " + m_WarriorHealth);
+        GameObject.Find("Mage Health").GetComponent<TextMeshProUGUI>().SetText("Mage Health: " + m_MageHealth);
+
+        if (m_MageHealth == 0 || m_WarriorHealth == 0) {
+            GameObject.Find("Losing Text").GetComponent<TextMeshProUGUI>().enabled = true;
+            Time.timeScale = 0;
+
+        }
+
         switch (m_PlayerType)
         {
             case E_PlayerType.Mage:
@@ -272,9 +309,10 @@ public class PlayerController : MonoBehaviour
 
             m_PlayerAnimator.SetBool("IsAttacking", IsAttacking);
 
-            if (Input.GetKeyDown(KeyCode.Z) && IsMoving == false) {
+            if (Input.GetKeyDown(KeyCode.Space) && IsMoving == false)
+            {
                 StartCoroutine("Attack");
-                
+
             }
 
 
@@ -313,7 +351,7 @@ public class PlayerController : MonoBehaviour
             if (m_XAxis > 0)
             {
                 m_PlayerDirection = E_PlayerDirection.Right;
-                
+
 
             }
             else if (m_XAxis < 0)
@@ -348,11 +386,11 @@ public class PlayerController : MonoBehaviour
     IEnumerator Attack()
     {
         IsAttacking = true;
-        
+
         yield return new WaitUntil(() => m_PlayerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1);
-        
+
         IsAttacking = false;
     }
 
-    
+
 }
